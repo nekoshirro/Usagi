@@ -65,6 +65,7 @@ interface NetworkModule {
 			settings: AppSettings,
 			proxyProvider: ProxyProvider,
 			bypassTunnelFactory: BypassTunnelFactory,
+			webViewExecutorProvider: Provider<org.draken.usagi.core.network.webview.WebViewExecutor>,
 		): OkHttpClient =
 			OkHttpClient
 				.Builder()
@@ -85,7 +86,7 @@ interface NetworkModule {
 					}
 					cache(cache)
 					addInterceptor(GZipInterceptor())
-					addInterceptor(CloudFlareInterceptor())
+					addInterceptor(CloudFlareInterceptor(webViewExecutorProvider))
 					addInterceptor(RateLimitInterceptor())
 					if (BuildConfig.DEBUG) {
 						addInterceptor(CurlLoggingInterceptor())
