@@ -1,0 +1,42 @@
+name: Build & Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - devel
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fetch latest commit
+        id: meta
+        run: echo "sha_short=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Set up Java environment
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Gradle environment
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build debug APK
+        run: chmod +x gradlew && ./gradlew :app:assembleDebug
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.sha_short }}
+          name: "${{ steps.meta.outputs.sha_short }}"
+          files: app/build/outputs/apk/debug/app-debug.apk
+          token: ${{ secrets.GITHUB_TOKEN }}
